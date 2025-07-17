@@ -5,59 +5,67 @@ import {
   TextInput,
   TouchableOpacity,
   StyleSheet,
+  Image,
   KeyboardAvoidingView,
   Platform,
+  ScrollView,
+  Dimensions,
 } from 'react-native';
+
+const { width } = Dimensions.get('window');
 
 export default function LoginScreen({ navigation }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
   const handleLogin = () => {
-    // Normally you would validate login here
-    navigation.replace('Home'); // Navigate to Home after login
+    navigation.replace('Home');
   };
 
   return (
     <KeyboardAvoidingView
       style={styles.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
-      <Text style={styles.title}>WH-to-WA</Text>
+      <ScrollView contentContainerStyle={styles.scrollContainer}>
+        <Image
+          source={require('../assets/login_cartoon.png')}
+          style={styles.banner}
+          resizeMode="contain"
+        />
 
-      <View style={styles.robots}>
-        <Text style={styles.emoji}>🤖</Text>
-        <Text style={styles.play}>▶️</Text>
-        <Text style={styles.emoji}>🛸</Text>
-      </View>
+        <View style={styles.form}>
+          <TextInput
+            style={styles.input}
+            placeholder="Email"
+            placeholderTextColor="#AAB8D3"
+            value={email}
+            onChangeText={setEmail}
+          />
+          <TextInput
+            style={styles.input}
+            placeholder="Password"
+            placeholderTextColor="#AAB8D3"
+            value={password}
+            onChangeText={setPassword}
+            secureTextEntry
+          />
 
-      <TextInput
-        style={styles.input}
-        placeholder="Email"
-        placeholderTextColor="#AAB8D3"
-        value={email}
-        onChangeText={setEmail}
-      />
+          <TouchableOpacity style={styles.loginBtn} onPress={handleLogin}>
+            <Text style={styles.loginText}>Log in</Text>
+          </TouchableOpacity>
 
-      <TextInput
-        style={styles.input}
-        placeholder="Password"
-        placeholderTextColor="#AAB8D3"
-        value={password}
-        onChangeText={setPassword}
-        secureTextEntry
-      />
-
-      <TouchableOpacity style={styles.loginBtn} onPress={handleLogin}>
-        <Text style={styles.loginText}>Log in</Text>
-      </TouchableOpacity>
-
-      <Text style={styles.signupText}>
-        Don’t have an account?{' '}
-        <Text style={styles.signupLink} onPress={() => navigation.navigate('Signup')}>
-          Sign up
-        </Text>
-      </Text>
+          <Text style={styles.signupText}>
+            Don’t have an account?{' '}
+            <Text
+              style={styles.signupLink}
+              onPress={() => navigation.navigate('Signup')}
+            >
+              Sign up
+            </Text>
+          </Text>
+        </View>
+      </ScrollView>
     </KeyboardAvoidingView>
   );
 }
@@ -65,35 +73,26 @@ export default function LoginScreen({ navigation }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#071952',
+    backgroundColor: '#001855',
+  },
+  scrollContainer: {
     alignItems: 'center',
-    justifyContent: 'center',
-    padding: 24,
+    paddingBottom: 40,
   },
-  title: {
-    fontSize: 36,
-    color: 'white',
-    fontWeight: 'bold',
-    marginBottom: 20,
+  banner: {
+    width: width,
+    height: width * 1.1,
+    marginTop: 30,
+    marginBottom: 10,
   },
-  robots: {
-    flexDirection: 'row',
+  form: {
+    width: '90%',
     alignItems: 'center',
-    marginBottom: 50,
-  },
-  emoji: {
-    fontSize: 54,
-    marginHorizontal: 10,
-  },
-  play: {
-    fontSize: 36,
-    color: '#FFA500',
-    marginHorizontal: 10,
   },
   input: {
     width: '100%',
     backgroundColor: '#0F2C54',
-    borderRadius: 12,
+    borderRadius: 14,
     paddingHorizontal: 16,
     paddingVertical: 14,
     color: 'white',
@@ -103,10 +102,10 @@ const styles = StyleSheet.create({
   loginBtn: {
     backgroundColor: '#FF6C2F',
     paddingVertical: 14,
-    paddingHorizontal: 60,
-    borderRadius: 12,
+    paddingHorizontal: 50,
+    borderRadius: 14,
     marginTop: 12,
-    marginBottom: 24,
+    marginBottom: 20,
   },
   loginText: {
     color: 'white',
