@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import {
   View,
@@ -5,8 +6,12 @@ import {
   TouchableOpacity,
   StyleSheet,
   ScrollView,
-  Image
+  Image,
+  SafeAreaView,
+  Dimensions,
 } from 'react-native';
+
+const { width } = Dimensions.get('window');
 
 const questions = [
   {
@@ -213,58 +218,75 @@ export default function QuestionnaireScreen({ navigation }) {
   const total = questions.length;
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.header}>Question {current + 1} / {total}</Text>
-      <View style={styles.progressBar}>
-        <View style={[styles.progressFill, { width: `${((current + 1) / total) * 100}%` }]} />
-      </View>
+    <SafeAreaView style={styles.safe}>
+      <ScrollView contentContainerStyle={styles.container}>
+        <Image
+          source={require('../assets/robots.png')} // replace with your file path
+          style={styles.robotImage}
+          resizeMode="contain"
+        />
 
-      <View style={styles.card}>
-        <Text style={styles.subText}>Select an answer</Text>
-        <Text style={styles.question}>{q.question}</Text>
+        <Text style={styles.header}>Question {current + 1} / {total}</Text>
+        <View style={styles.progressBar}>
+          <View style={[styles.progressFill, { width: `${((current + 1) / total) * 100}%` }]} />
+        </View>
 
-        {q.options.map((option, i) => (
+        <View style={styles.card}>
+          <Text style={styles.subText}>Select an answer</Text>
+          <Text style={styles.question}>{q.question}</Text>
+
+          {q.options.map((option, i) => (
+            <TouchableOpacity
+              key={i}
+              style={[
+                styles.optionBtn,
+                selected === option && styles.selectedBtn
+              ]}
+              onPress={() => handleAnswer(option)}
+              disabled={selected !== null}
+            >
+              <Text style={[
+                styles.optionText,
+                selected === option && styles.selectedText
+              ]}>
+                {selected === option ? '✓ ' : ''}{option}
+              </Text>
+            </TouchableOpacity>
+          ))}
+
           <TouchableOpacity
-            key={i}
+            onPress={() => {
+              if (selected !== null) handleAnswer(selected);
+            }}
+            disabled={selected === null}
             style={[
-              styles.optionBtn,
-              selected === option && styles.selectedBtn
+              styles.nextBtn,
+              { opacity: selected === null ? 0.5 : 1 }
             ]}
-            onPress={() => handleAnswer(option)}
-            disabled={selected !== null}
           >
-            <Text style={[
-              styles.optionText,
-              selected === option && styles.selectedText
-            ]}>
-              {selected === option ? '✓ ' : ''}{option}
-            </Text>
+            <Text style={styles.nextText}>Next →</Text>
           </TouchableOpacity>
-        ))}
-
-        <TouchableOpacity
-          onPress={() => {
-            if (selected !== null) handleAnswer(selected);
-          }}
-          disabled={selected === null}
-          style={[
-            styles.nextBtn,
-            { opacity: selected === null ? 0.5 : 1 }
-          ]}
-        >
-          <Text style={styles.nextText}>Next →</Text>
-        </TouchableOpacity>
-      </View>
-    </View>
+        </View>
+      </ScrollView>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    backgroundColor: '#001855',
+  safe: {
     flex: 1,
-    paddingTop: 60,
+    backgroundColor: '#001855',
+  },
+  container: {
+    paddingTop: 40,
     paddingHorizontal: 20,
+    paddingBottom: 40,
+  },
+  robotImage: {
+    width: width * 0.9,
+    height: width * 0.5,
+    alignSelf: 'center',
+    marginBottom: 20,
   },
   header: {
     color: 'white',
