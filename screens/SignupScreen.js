@@ -5,10 +5,13 @@ import {
   TextInput,
   TouchableOpacity,
   StyleSheet,
+  Image,
   KeyboardAvoidingView,
   Platform,
   Alert,
 } from 'react-native';
+
+const { width } = require('react-native').Dimensions.get('window');
 
 export default function SignupScreen({ navigation }) {
   const [name, setName] = useState('');
@@ -43,46 +46,52 @@ export default function SignupScreen({ navigation }) {
   return (
     <KeyboardAvoidingView
       style={styles.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
-      <Text style={styles.title}>Sign Up</Text>
+      <View style={{ flex: 1 }}>
+        <Image
+          source={require('../assets/signup_cartoon.png')}
+          style={styles.banner}
+          resizeMode="contain"
+        />
 
-      <TextInput
-        style={styles.input}
-        placeholder="Name"
-        placeholderTextColor="#AAB8D3"
-        value={name}
-        onChangeText={setName}
-      />
+        <View style={styles.form}>
+          <TextInput
+            style={styles.input}
+            placeholder="Name"
+            placeholderTextColor="#AAB8D3"
+            value={name}
+            onChangeText={setName}
+          />
+          <TextInput
+            style={styles.input}
+            placeholder="Email"
+            placeholderTextColor="#AAB8D3"
+            value={email}
+            onChangeText={setEmail}
+            keyboardType="email-address"
+          />
+          <TextInput
+            style={styles.input}
+            placeholder="Password"
+            placeholderTextColor="#AAB8D3"
+            value={password}
+            onChangeText={setPassword}
+            secureTextEntry
+          />
 
-      <TextInput
-        style={styles.input}
-        placeholder="Email"
-        placeholderTextColor="#AAB8D3"
-        value={email}
-        onChangeText={setEmail}
-        keyboardType="email-address"
-      />
+          <TouchableOpacity style={styles.signupBtn} onPress={handleSignup} disabled={loading}>
+            <Text style={styles.signupText}>{loading ? 'Signing Up...' : 'Sign Up'}</Text>
+          </TouchableOpacity>
 
-      <TextInput
-        style={styles.input}
-        placeholder="Password"
-        placeholderTextColor="#AAB8D3"
-        value={password}
-        onChangeText={setPassword}
-        secureTextEntry
-      />
-
-      <TouchableOpacity style={styles.signupBtn} onPress={handleSignup} disabled={loading}>
-        <Text style={styles.signupText}>{loading ? 'Signing Up...' : 'Sign Up'}</Text>
-      </TouchableOpacity>
-
-      <Text style={styles.loginText}>
-        Have an account?{' '}
-        <Text style={styles.loginLink} onPress={() => navigation.navigate('Questionnai')}>
-          Log in
-        </Text>
-      </Text>
+          <Text style={styles.loginText}>
+            Have an account?{' '}
+            <Text style={styles.loginLink} onPress={() => navigation.navigate('Login')}>
+              Log in
+            </Text>
+          </Text>
+        </View>
+      </View>
     </KeyboardAvoidingView>
   );
 }
@@ -90,22 +99,23 @@ export default function SignupScreen({ navigation }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#071952',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 24,
+    backgroundColor: '#001855',
   },
-  title: {
-    fontSize: 36,
-    color: 'white',
-    fontWeight: 'bold',
-    marginBottom: 30,
+  banner: {
+    width: width,
+    height: width * 1.1,
+    marginTop: 30,
+    marginBottom: 10,
+  },
+  form: {
+    width: '90%',
+    alignItems: 'center',
   },
   input: {
     width: '100%',
     backgroundColor: '#0F2C54',
-    borderRadius: 30,
-    paddingHorizontal: 20,
+    borderRadius: 14,
+    paddingHorizontal: 16,
     paddingVertical: 14,
     color: 'white',
     fontSize: 16,
@@ -114,10 +124,10 @@ const styles = StyleSheet.create({
   signupBtn: {
     backgroundColor: '#FF6C2F',
     paddingVertical: 14,
-    paddingHorizontal: 60,
-    borderRadius: 30,
+    paddingHorizontal: 50,
+    borderRadius: 14,
     marginTop: 12,
-    marginBottom: 24,
+    marginBottom: 20,
   },
   signupText: {
     color: 'white',

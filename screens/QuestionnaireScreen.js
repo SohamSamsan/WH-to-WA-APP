@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import {
   View,
@@ -5,7 +6,12 @@ import {
   TouchableOpacity,
   StyleSheet,
   ScrollView,
+  Image,
+  SafeAreaView,
+  Dimensions,
 } from 'react-native';
+
+const { width } = Dimensions.get('window');
 
 const questions = [
   {
@@ -187,72 +193,164 @@ const questions = [
       "Maybe with breaks",
       "Nope, I like it short and sweet"
     ]
-  }
+  },
 ];
 
 export default function QuestionnaireScreen({ navigation }) {
   const [current, setCurrent] = useState(0);
   const [answers, setAnswers] = useState([]);
+  const [selected, setSelected] = useState(null);
 
   const handleAnswer = (option) => {
+    setSelected(option);
     setAnswers(prev => [...prev, option]);
-    if (current < questions.length - 1) {
-      setCurrent(current + 1);
-    } else {
-      navigation.replace('Home');
-    }
+    setTimeout(() => {
+      if (current < questions.length - 1) {
+        setCurrent(current + 1);
+        setSelected(null);
+      } else {
+        navigation.replace('Home');
+      }
+    }, 700);
   };
 
   const q = questions[current];
+  const total = questions.length;
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Q{current + 1}:</Text>
-      <Text style={styles.question}>{q.question}</Text>
+    <SafeAreaView style={styles.safe}>
+      <ScrollView contentContainerStyle={styles.container}>
+        <Image
+          source={require('../assets/robots.png')} // replace with your file path
+          style={styles.robotImage}
+          resizeMode="contain"
+        />
 
-      <View style={styles.optionsBox}>
-        {q.options.map((option, i) => (
+        <Text style={styles.header}>Question {current + 1} / {total}</Text>
+        <View style={styles.progressBar}>
+          <View style={[styles.progressFill, { width: `${((current + 1) / total) * 100}%` }]} />
+        </View>
+
+        <View style={styles.card}>
+          <Text style={styles.subText}>Select an answer</Text>
+          <Text style={styles.question}>{q.question}</Text>
+
+          {q.options.map((option, i) => (
+            <TouchableOpacity
+              key={i}
+              style={[
+                styles.optionBtn,
+                selected === option && styles.selectedBtn
+              ]}
+              onPress={() => handleAnswer(option)}
+              disabled={selected !== null}
+            >
+              <Text style={[
+                styles.optionText,
+                selected === option && styles.selectedText
+              ]}>
+                {selected === option ? '✓ ' : ''}{option}
+              </Text>
+            </TouchableOpacity>
+          ))}
+
           <TouchableOpacity
-            key={i}
-            style={styles.optionBtn}
-            onPress={() => handleAnswer(option)}
+            onPress={() => {
+              if (selected !== null) handleAnswer(selected);
+            }}
+            disabled={selected === null}
+            style={[
+              styles.nextBtn,
+              { opacity: selected === null ? 0.5 : 1 }
+            ]}
           >
-            <Text style={styles.optionText}>{option}</Text>
+            <Text style={styles.nextText}>Next →</Text>
           </TouchableOpacity>
-        ))}
-      </View>
-    </View>
+        </View>
+      </ScrollView>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
+  safe: {
     flex: 1,
-    backgroundColor: '#071952',
-    padding: 24,
-    justifyContent: 'center',
+    backgroundColor: '#001855',
   },
-  title: {
-    color: '#FFA500',
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginBottom: 10,
+  container: {
+    paddingTop: 40,
+    paddingHorizontal: 20,
+    paddingBottom: 40,
   },
-  question: {
-    color: 'white',
-    fontSize: 20,
+  robotImage: {
+    width: width * 0.9,
+    height: width * 0.5,
+    alignSelf: 'center',
     marginBottom: 20,
   },
-  optionsBox: {
-    gap: 12,
+  header: {
+    color: 'white',
+    fontSize: 18,
+    fontWeight: '600',
+    marginBottom: 10,
+  },
+  progressBar: {
+    height: 8,
+    backgroundColor: '#704EA1',
+    borderRadius: 10,
+    overflow: 'hidden',
+    marginBottom: 20,
+  },
+  progressFill: {
+    height: '100%',
+    backgroundColor: '#FFA500',
+  },
+  card: {
+    backgroundColor: 'white',
+    borderRadius: 18,
+    padding: 20,
+    elevation: 5,
+  },
+  subText: {
+    color: '#888',
+    marginBottom: 6,
+    fontSize: 14,
+  },
+  question: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#222',
+    marginBottom: 16,
   },
   optionBtn: {
-    backgroundColor: '#0F2C54',
+    borderWidth: 1,
+    borderColor: '#ccc',
     padding: 14,
-    borderRadius: 12,
+    borderRadius: 10,
+    marginVertical: 6,
+  },
+  selectedBtn: {
+    backgroundColor: '#FFE7C0',
+    borderColor: '#FFA500',
   },
   optionText: {
+    fontSize: 16,
+    color: '#444',
+  },
+  selectedText: {
+    color: '#D35400',
+    fontWeight: 'bold',
+  },
+  nextBtn: {
+    marginTop: 20,
+    backgroundColor: '#FFA500',
+    padding: 14,
+    borderRadius: 10,
+    alignItems: 'center',
+  },
+  nextText: {
     color: 'white',
     fontSize: 16,
-  }
+    fontWeight: 'bold',
+  },
 });
