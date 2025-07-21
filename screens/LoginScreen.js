@@ -7,15 +7,39 @@ import {
   StyleSheet,
   KeyboardAvoidingView,
   Platform,
+  Alert,
 } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function LoginScreen({ navigation }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  const handleLogin = () => {
-    // Normally you would validate login here
-    navigation.replace('Home'); // Navigate to Home after login
+  const handleLogin = async () => {
+    setLoading(true);
+    try {
+      const response = await fetch('http://10.73.137.216:8000/auth/signin', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
+      });
+      if (response.ok) {
+        const data = await response.json();
+        await AsyncStorage.setItem('token', data.access_token);
+        Alert.alert('Success', 'Logged in!');
+        navigation.replace('Home');
+      } else {
+        const data = await response.json();
+        Alert.alert('Login Failed', data.detail || 'An error occurred');
+      }
+    } catch (error) {
+      Alert.alert('Login Failed', 'Network error');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -48,8 +72,8 @@ export default function LoginScreen({ navigation }) {
         secureTextEntry
       />
 
-      <TouchableOpacity style={styles.loginBtn} onPress={handleLogin}>
-        <Text style={styles.loginText}>Log in</Text>
+      <TouchableOpacity style={styles.loginBtn} onPress={handleLogin} disabled={loading}>
+        <Text style={styles.loginText}>{loading ? 'Logging in...' : 'Log in'}</Text>
       </TouchableOpacity>
 
       <Text style={styles.signupText}>

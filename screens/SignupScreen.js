@@ -7,16 +7,37 @@ import {
   StyleSheet,
   KeyboardAvoidingView,
   Platform,
+  Alert,
 } from 'react-native';
 
 export default function SignupScreen({ navigation }) {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [loading, setLoading] = useState(false);
 
-  const handleSignup = () => {
-    // Normally you would validate or submit data here
-    navigation.replace('Questionnaire'); // Navigate to Home after sign up
+  const handleSignup = async () => {
+    setLoading(true);
+    try {
+      const response = await fetch('http://10.73.137.216:8000/auth/signup', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ name, email, password }),
+      });
+      if (response.ok) {
+        Alert.alert('Success', 'Account created! Please fill out the questionnaire.');
+        navigation.replace('Questionnaire');
+      } else {
+        const data = await response.json();
+        Alert.alert('Signup Failed', data.detail || 'An error occurred');
+      }
+    } catch (error) {
+      Alert.alert('Signup Failed', 'Network error');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -52,13 +73,13 @@ export default function SignupScreen({ navigation }) {
         secureTextEntry
       />
 
-      <TouchableOpacity style={styles.signupBtn} onPress={handleSignup}>
-        <Text style={styles.signupText}>Sign Up</Text>
+      <TouchableOpacity style={styles.signupBtn} onPress={handleSignup} disabled={loading}>
+        <Text style={styles.signupText}>{loading ? 'Signing Up...' : 'Sign Up'}</Text>
       </TouchableOpacity>
 
       <Text style={styles.loginText}>
         Have an account?{' '}
-        <Text style={styles.loginLink} onPress={() => navigation.navigate('Login')}>
+        <Text style={styles.loginLink} onPress={() => navigation.navigate('Questionnai')}>
           Log in
         </Text>
       </Text>
