@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import {
+  SafeAreaView,
   View,
   Text,
   TextInput,
@@ -7,118 +8,189 @@ import {
   StyleSheet,
   KeyboardAvoidingView,
   Platform,
+  Image,
+  Dimensions,
+  Alert,
+  ScrollView,
 } from 'react-native';
+import MaterialCommunityIcons from 'react-native-vector-icons/MaterialCommunityIcons';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useNavigation } from '@react-navigation/native';
+import { authAPI } from '../api';
 
-export default function LoginScreen({ navigation }) {
-  const [email, setEmail] = useState('');
+const { width, height } = Dimensions.get('window');
+
+const COLORS = {
+  bg: '#0B2A37',           // fallback background behind poster
+  pillFill: '#0E3F4F',     // dark teal
+  pillOutline: '#FFC82E',  // yellow outline
+  cta: '#FFD339',          // button yellow
+  text: '#E3F6FF',         // input text
+  hint: '#6ED4FF',         // placeholder/icon cyan
+  link: '#00AEEF',
+  black: '#0A0A0A',
+};
+
+export default function LoginScreen() {
+  const navigation = useNavigation();
+  const [email, setEmail]       = useState('');
   const [password, setPassword] = useState('');
+  const [loading, setLoading]   = useState(false);
+  const passRef = useRef(null);
 
-  const handleLogin = () => {
-    // Normally you would validate login here
-    navigation.replace('Home'); // Navigate to Home after login
+  const handleLogin = async () => {
+    if (!email || !password) {
+      Alert.alert('Missing info', 'Please enter username and password.');
+      return;
+    }
+    setLoading(true);
+    try {
+      const res = await authAPI.signin({ email, password });
+      if (res.ok) {
+        const data = res.data ?? {};
+        await AsyncStorage.setItem('token', data.access_token ?? '');
+        const userData = {
+          name:   data.user?.name   || 'User',
+          email:  data.user?.email  || email,
+          mobile: data.user?.mobile || '0000000000',
+        };
+        await AsyncStorage.setItem('user', JSON.stringify(userData));
+        navigation.replace('Home', userData);
+      } else {
+        Alert.alert('Login failed', res.data?.detail || 'Please try again.');
+      }
+    } catch {
+      Alert.alert('Network error', 'Please check your connection.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
-    <KeyboardAvoidingView
-      style={styles.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-    >
-      <Text style={styles.title}>WH-to-WA</Text>
+    <SafeAreaView style={styles.root}>
+      <KeyboardAvoidingView style={{ flex: 1 }} behavior={Platform.OS === 'ios' ? 'padding' : undefined}>
+        <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
+          {/* Top: Poster occupies ~50–55% height */}
+          <View style={styles.posterWrap}>
+            <Image
+              source={require('../assets/login2.png')}  // <— use your poster (the one you sent)
+              style={styles.poster}
+              resizeMode="contain"
+            />
+          </View>
 
-      <View style={styles.robots}>
-        <Text style={styles.emoji}>🤖</Text>
-        <Text style={styles.play}>▶️</Text>
-        <Text style={styles.emoji}>🛸</Text>
-      </View>
+          {/* Bottom: Form */}
+          <View style={styles.form}>
+            <View style={styles.pillRow}>
+              <MaterialCommunityIcons name="account" size={22} color={COLORS.hint} style={styles.icon} />
+              <TextInput
+                style={styles.pillInput}
+                placeholder="Username"
+                placeholderTextColor={COLORS.hint}
+                value={email}
+                onChangeText={setEmail}
+                autoCapitalize="none"
+                autoCorrect={false}
+                keyboardType="email-address"
+                returnKeyType="next"
+                onSubmitEditing={() => passRef.current?.focus()}
+              />
+            </View>
 
-      <TextInput
-        style={styles.input}
-        placeholder="Email"
-        placeholderTextColor="#AAB8D3"
-        value={email}
-        onChangeText={setEmail}
-      />
+            <View style={[styles.pillRow, { marginTop: 14 }]}>
+              <MaterialCommunityIcons name="lock" size={22} color={COLORS.hint} style={styles.icon} />
+              <TextInput
+                ref={passRef}
+                style={styles.pillInput}
+                placeholder="Password"
+                placeholderTextColor={COLORS.hint}
+                value={password}
+                onChangeText={setPassword}
+                secureTextEntry
+                returnKeyType="done"
+                onSubmitEditing={handleLogin}
+              />
+            </View>
 
-      <TextInput
-        style={styles.input}
-        placeholder="Password"
-        placeholderTextColor="#AAB8D3"
-        value={password}
-        onChangeText={setPassword}
-        secureTextEntry
-      />
+            <TouchableOpacity style={styles.cta} onPress={handleLogin} disabled={loading}>
+              <Text style={styles.ctaText}>{loading ? 'LOGGING IN…' : 'LOGIN'}</Text>
+            </TouchableOpacity>
 
-      <TouchableOpacity style={styles.loginBtn} onPress={handleLogin}>
-        <Text style={styles.loginText}>Log in</Text>
-      </TouchableOpacity>
-
-      <Text style={styles.signupText}>
-        Don’t have an account?{' '}
-        <Text style={styles.signupLink} onPress={() => navigation.navigate('Signup')}>
-          Sign up
-        </Text>
-      </Text>
-    </KeyboardAvoidingView>
+            <Text style={styles.signupRow}>
+              Don’t have an account?{' '}
+              <Text style={styles.signupLink} onPress={() => navigation.navigate('Signup')}>
+                Register
+              </Text>
+            </Text>
+          </View>
+        </ScrollView>
+      </KeyboardAvoidingView>
+    </SafeAreaView>
   );
 }
 
+const PILL_H = 56;
+
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#071952',
+  root: { flex: 1, backgroundColor: COLORS.bg },
+  scroll: { paddingBottom: 24 },
+
+  // Poster sits top→middle
+  posterWrap: {
+    height: height * 0.52,    // adjust 0.48–0.58 to taste
+    width: '100%',
     alignItems: 'center',
-    justifyContent: 'center',
-    padding: 24,
+    justifyContent: 'flex-start',
   },
-  title: {
-    fontSize: 36,
-    color: 'white',
-    fontWeight: 'bold',
-    marginBottom: 20,
+  poster: {
+    width: width,
+    height: '100%',
   },
-  robots: {
+
+  // Form section
+  form: {
+    paddingHorizontal: 20,
+    paddingTop: 6,
+  },
+  pillRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 50,
+    height: PILL_H,
+    borderRadius: 999,
+    backgroundColor: COLORS.pillFill,
+    borderWidth: 3,
+    borderColor: COLORS.pillOutline,
+    paddingHorizontal: 18,
   },
-  emoji: {
-    fontSize: 54,
-    marginHorizontal: 10,
+  icon: { marginRight: 10 },
+  pillInput: {
+    flex: 1,
+    color: COLORS.text,
+    fontSize: 18,
+    paddingVertical: 0,
   },
-  play: {
-    fontSize: 36,
-    color: '#FFA500',
-    marginHorizontal: 10,
+  cta: {
+    height: PILL_H,
+    borderRadius: 18,
+    backgroundColor: COLORS.cta,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginTop: 18,
   },
-  input: {
-    width: '100%',
-    backgroundColor: '#0F2C54',
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 14,
-    color: 'white',
-    fontSize: 16,
-    marginBottom: 16,
+  ctaText: {
+    fontSize: 18,
+    fontWeight: '800',
+    color: COLORS.black,
+    letterSpacing: 0.5,
   },
-  loginBtn: {
-    backgroundColor: '#FF6C2F',
-    paddingVertical: 14,
-    paddingHorizontal: 60,
-    borderRadius: 12,
-    marginTop: 12,
-    marginBottom: 24,
-  },
-  loginText: {
-    color: 'white',
-    fontWeight: 'bold',
-    fontSize: 16,
-  },
-  signupText: {
-    color: '#AAB8D3',
+  signupRow: {
+    marginTop: 14,
+    textAlign: 'center',
+    color: '#1D1D1D',
     fontSize: 14,
   },
   signupLink: {
-    color: '#FFA500',
-    fontWeight: 'bold',
+    color: COLORS.link,
+    fontWeight: '700',
   },
 });

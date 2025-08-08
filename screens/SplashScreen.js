@@ -1,140 +1,102 @@
-// import React, { useEffect } from 'react';
-// import { View, Text, StyleSheet } from 'react-native';
 
-// export default function SplashScreen({ navigation }) {
-//   useEffect(() => {
-//   console.log("SplashScreen mounted");
-//   const timer = setTimeout(() => {
-//     console.log("Navigating to Login...");
-//     navigation.replace('Login');
-//   }, 3000);
-
-//   return () => clearTimeout(timer);
-// }, []);
-
-
-//   return (
-//     <View style={styles.container}>
-//       <Text style={styles.title}>WH-to-WA</Text>
-
-//       <View style={styles.robotsRow}>
-//         <Text style={styles.robot}>🤖</Text>
-//         <Text style={styles.play}>▶️</Text>
-//         <Text style={styles.robot}>🛸</Text>
-//       </View>
-
-//       <View style={styles.confetti}>
-//         {Array.from({ length: 20 }).map((_, i) => (
-//           <View
-//             key={i}
-//             style={{
-//               width: 8,
-//               height: 8,
-//               backgroundColor: confettiColors[i % confettiColors.length],
-//               position: 'absolute',
-//               top: Math.random() * 400 + 100,
-//               left: Math.random() * 300,
-//               transform: [{ rotate: `${Math.random() * 360}deg` }],
-//             }}
-//           />
-//         ))}
-//       </View>
-//     </View>
-//   );
-// }
-
-// const confettiColors = ['#FF7F50', '#00FFFF', '#FFA500', '#40E0D0', '#00BFFF'];
-
-// const styles = StyleSheet.create({
-//   container: {
-//     flex: 1,
-//     backgroundColor: '#071952',
-//     alignItems: 'center',
-//     justifyContent: 'center',
-//   },
-//   title: {
-//     fontSize: 42,
-//     color: 'white',
-//     fontWeight: 'bold',
-//     marginBottom: 40,
-//   },
-//   robotsRow: {
-//     flexDirection: 'row',
-//     alignItems: 'center',
-//     gap: 20,
-//   },
-//   robot: {
-//     fontSize: 60,
-//   },
-//   play: {
-//     fontSize: 40,
-//     color: '#FFA500',
-//     marginHorizontal: 10,
-//   },
-//   confetti: {
-//     position: 'absolute',
-//     top: 0,
-//     left: 0,
-//     width: '100%',
-//     height: '100%',
-//   },
-// });
 
 
 import React, { useEffect } from 'react';
-import { View, Text, StyleSheet, Button } from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  Dimensions,
+} from 'react-native';
+import { useNavigation } from '@react-navigation/native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import LottieView from 'lottie-react-native';
 
-export default function SplashScreen({ navigation }) {
+const { width, height } = Dimensions.get('window');
+
+export default function SplashScreen() {
+  const navigation = useNavigation();
+
   useEffect(() => {
-    console.log("SplashScreen mounted");
     const timer = setTimeout(() => {
-      console.log("Navigating to Login...");
-      navigation.navigate('Login'); // use navigate to verify it works
-    }, 3000);
-
+      navigation.replace('Login');
+    }, 5000); // show splash for 4 seconds
     return () => clearTimeout(timer);
   }, []);
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>WH-to-WA</Text>
-
-      <View style={styles.robotsRow}>
-        <Text style={styles.robot}>🤖</Text>
-        <Text style={styles.play}>▶️</Text>
-        <Text style={styles.robot}>🛸</Text>
-      </View>
-
-      <Button title="Go to Login manually" onPress={() => navigation.navigate('Login')} />
-
-    </View>
+    <SafeAreaView style={styles.container}>
+      <LottieView
+        source={require('../assets/Animation-screen.json')}
+        autoPlay
+        loop
+        style={styles.animation}
+      />
+      <Text style={styles.title}>Just Decide</Text>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#071952',
-    alignItems: 'center',
+    backgroundColor: '#ffffff', // white background
     justifyContent: 'center',
+    alignItems: 'center',
+  },
+  animation: {
+    width: width * 0.7,
+    height: width * 0.7,
   },
   title: {
-    fontSize: 42,
-    color: 'white',
-    fontWeight: 'bold',
-    marginBottom: 40,
-  },
-  robotsRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 20,
-  },
-  robot: {
-    fontSize: 60,
-  },
-  play: {
-    fontSize: 40,
-    color: '#FFA500',
-    marginHorizontal: 10,
+    fontSize: 32,
+    fontWeight: '800',
+    color: '#1a1a1aff',
+    // color: '#ffffff',
+    marginTop: 20,
+    fontFamily: 'Plus Jakarta Sans', // optional if you use it
   },
 });
+
+
+// import React, { useEffect } from 'react';
+// import {
+//   View,
+//   ImageBackground,
+//   StyleSheet,
+//   Dimensions,
+// } from 'react-native';
+// import { useNavigation } from '@react-navigation/native';
+
+// const { width, height } = Dimensions.get('window');
+
+// export default function SplashScreen() {
+//   const navigation = useNavigation();
+
+//   useEffect(() => {
+//     const timer = setTimeout(() => {
+//       navigation.replace('Login');
+//     }, 4000); // 4 seconds
+//     return () => clearTimeout(timer);
+//   }, []);
+
+//   return (
+//     <View style={styles.container}>
+//       <ImageBackground
+//         source={require('../assets/new-screen.png')} // Replace with your actual image path
+//         style={styles.background}
+//         resizeMode="cover"
+//       />
+//     </View>
+//   );
+// }
+
+// const styles = StyleSheet.create({
+//   container: {
+//     flex: 1,
+//   },
+//   background: {
+//     width: width,
+//     height: height,
+//   },
+// });
